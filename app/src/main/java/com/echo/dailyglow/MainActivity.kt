@@ -150,7 +150,7 @@ private fun DailyGlowApp(sharedPlanText: String?, sharedPlanIsHistory: Boolean, 
             plan = incoming
             Toast.makeText(context, if (sharedPlanIsHistory) "已导入到今天：${incoming.title}" else "已导入：${incoming.title}", Toast.LENGTH_LONG).show()
         } catch (_: Exception) {
-            importError = "未识别到训练计划。请从任务消息中只分享完整 JSON，或复制 JSON 后再分享给 DailyGlow。"
+            importError = "未识别到训练计划。请提供一份完整的训练计划 JSON。"
         } finally {
             onSharedPlanHandled()
         }
