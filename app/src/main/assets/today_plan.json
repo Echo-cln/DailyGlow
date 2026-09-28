@@ -1,0 +1,19 @@
+{
+  "date": "2026-09-23",
+  "title": "Day 2 · 核心复刻 + 上半身塑形",
+  "note": "腹部仍明显酸痛时，核心循环改为 2 轮；新动作以姿势正确为先。",
+  "playlist": "节奏感流行 / 电子乐 · 120–140 BPM",
+  "items": [
+    {"id":"warmup","phase":"训前热身","name":"简单热身","instruction":"猫牛式 8 次、肩膀前后绕环各 10 次、原地轻松走或摆臂 60 秒。","kind":"TIME","value":180,"sets":1,"tutorialQuery":"猫牛式 肩绕环 热身"},
+    {"id":"core-plank","phase":"核心复刻 · 每轮","name":"平板支撑","instruction":"前臂撑地，肩在肘正上方；收紧腹部和臀部，身体保持直线。","kind":"TIME","value":20,"sets":3,"tutorialQuery":"平板支撑 正确姿势"},
+    {"id":"core-side-left","phase":"核心复刻 · 每轮","name":"左侧平板支撑","instruction":"左前臂支撑，髋部抬起；避免塌腰和耸肩。","kind":"TIME","value":15,"sets":3,"tutorialQuery":"侧平板支撑 正确姿势"},
+    {"id":"core-side-right","phase":"核心复刻 · 每轮","name":"右侧平板支撑","instruction":"右前臂支撑，髋部抬起；避免塌腰和耸肩。","kind":"TIME","value":15,"sets":3,"tutorialQuery":"侧平板支撑 正确姿势"},
+    {"id":"core-dead-bug","phase":"核心复刻 · 每轮","name":"死虫 Dead Bug","instruction":"腰背轻贴地面，慢慢伸对侧手脚；腰离地就缩小幅度。","kind":"REPS","value":10,"sets":3,"tutorialQuery":"死虫 Dead Bug 正确动作"},
+    {"id":"core-twist","phase":"核心复刻 · 每轮","name":"俄罗斯转体","instruction":"躯干带动转动，不要只甩手臂；全程自然呼吸。","kind":"REPS","value":20,"sets":3,"tutorialQuery":"俄罗斯转体 正确姿势"},
+    {"id":"wall-pushup","phase":"手臂 + 肩背","name":"墙壁俯卧撑","instruction":"身体成直线，手推墙时不耸肩；每组间休息 45 秒。","kind":"REPS","value":12,"sets":3,"tutorialQuery":"墙壁俯卧撑 正确姿势"},
+    {"id":"knee-pushup","phase":"手臂 + 肩背 · 可选","name":"跪姿俯卧撑","instruction":"膝下垫厚；若膝盖不舒服或难度过高，跳过并继续墙壁俯卧撑。","kind":"REPS","value":6,"sets":2,"tutorialQuery":"跪姿俯卧撑 正确姿势"},
+    {"id":"ytw","phase":"手臂 + 肩背","name":"俯卧 Y-T-W","instruction":"Y、T、W 各 8 次算一组；动作慢，感受肩胛骨向后收。","kind":"REPS","value":24,"sets":2,"tutorialQuery":"俯卧 YTW 肩背训练"},
+    {"id":"glute-bridge","phase":"臀部补充","name":"臀桥","instruction":"顶峰停 1 秒，再慢慢落下；主要感受臀部发力。","kind":"REPS","value":15,"sets":3,"tutorialQuery":"臀桥 正确姿势"},
+    {"id":"cooldown","phase":"训练后拉伸","name":"收尾拉伸","instruction":"婴儿式 45 秒、眼镜蛇式 30 秒、胸肩拉伸左右各 30 秒、仰卧扭转左右各 30 秒。","kind":"TIME","value":240,"sets":1,"tutorialQuery":"训练后 胸肩 腹部 拉伸"}
+  ]
+}
