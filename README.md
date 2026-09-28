@@ -8,7 +8,7 @@
 - 计次数和组数可在卡片内编辑；完成状态按日期保存。
 - “看姿势”跳转小红书搜索；“打开网易云”尝试唤起网易云音乐。
 - 离线优先，内置 `app/src/main/assets/today_plan.json`；未联网也可训练。
-- 云端更新接口已预留：将 `app/build.gradle.kts` 中的 `PLAN_ENDPOINT` 换成 HTTPS 地址。接口返回与 `today_plan.json` 相同的 JSON；App 点击右上角刷新即可同步，网络失败会保留现有计划。
+- 已接入 GitHub 云端计划：App 读取仓库内 `app/src/main/assets/today_plan.json` 的 Raw 地址；App 点击右上角刷新即可同步，网络失败会保留现有计划。
 - 支持从 ChatGPT 分享纯文本计划：在 Android 的 ChatGPT 中将任务生成的 JSON 用“分享”发送到 DailyGlow，即可直接替换当天计划。
 
 ## 打包安装
@@ -25,7 +25,7 @@ ChatGPT 分享对话和定时任务不是可调用 API，不能被 App 自动抓
 
 把定时任务的输出要求设为：**不要写解释；只输出一个合法 JSON 对象，字段完全遵循本文件下方的接口契约。**
 
-> 每天更新训练的最简单方式：编辑云端计划 JSON 并部署到 `PLAN_ENDPOINT`；打开 App 后点刷新。首版不需要登录或服务器数据库。
+> 每天更新训练：在 GitHub 编辑并提交 `app/src/main/assets/today_plan.json`，随后打开 App 点击刷新。App 请求会自动附带时间戳，避免读取 CDN 缓存。
 
 ## 云端接口契约
 
