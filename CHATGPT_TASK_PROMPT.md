@@ -47,8 +47,8 @@ JSON 结构：
 }
 ```
 
-## 每天导入
+## 每天同步
 
-收到任务结果后，在 ChatGPT 将**整条 JSON**分享给 DailyGlow；App 显示“已导入”即覆盖当天计划。若无法直接分享单条消息，复制 JSON 至记事本，再从系统分享给 DailyGlow。
+任务结果只负责生成一条完整 JSON。把它提交到 GitHub 仓库 `Echo-cln/DailyGlow` 的 `app/src/main/assets/today_plan.json`；DailyGlow 点击右上角刷新后读取该文件。不要假设 ChatGPT 可以通过“分享”直接把计划导入 DailyGlow。
 
 训练记录分享链接仅用来保存人工可读的历史；本文件中的周计划才是任务与 App 的版本基准。训练安排有变动时，更新本文件中的任务指令，再替换 ChatGPT 定时任务的指令。
