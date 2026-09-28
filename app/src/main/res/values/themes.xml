@@ -1,0 +1,9 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.DailyGlow" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">@color/pastel_maroon</item>
+        <item name="android:navigationBarColor">@color/cashmere</item>
+        <item name="android:statusBarColor">@color/cashmere</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>
