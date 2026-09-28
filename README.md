@@ -9,7 +9,7 @@
 - “看姿势”跳转小红书搜索；“打开网易云”尝试唤起网易云音乐。
 - 离线优先，内置 `app/src/main/assets/today_plan.json`；未联网也可训练。
 - 已接入 GitHub 云端计划：App 读取仓库内 `app/src/main/assets/today_plan.json` 的 Raw 地址；App 点击右上角刷新即可同步，网络失败会保留现有计划。
-- 支持从 ChatGPT 分享纯文本计划：在 Android 的 ChatGPT 中将任务生成的 JSON 用“分享”发送到 DailyGlow，即可直接替换当天计划。
+- 可接收其他 Android 应用通过系统“分享”发送的纯文本 JSON；这不是 ChatGPT 的固定导入方式。
 
 ## 打包安装
 
@@ -21,7 +21,7 @@
 
 ## 与 ChatGPT 定时任务配合（推荐）
 
-ChatGPT 分享对话和定时任务不是可调用 API，不能被 App 自动抓取。正确闭环是：定时任务按固定 JSON 格式生成当天计划 → 你在 ChatGPT 点“分享” → 选择 DailyGlow → App 自动导入。聊天记录链接只作为你和 ChatGPT 制定训练规则的参考，不参与 App 网络请求。
+ChatGPT 分享对话和定时任务不是可调用 API，不能被 App 自动抓取；ChatGPT 也不能保证把单条任务结果通过 Android 系统分享给 DailyGlow。唯一可靠闭环是：定时任务按固定 JSON 格式生成当天计划 → 将 JSON 提交到本仓库的 `app/src/main/assets/today_plan.json` → App 点击右上角刷新。聊天记录链接只作为你和 ChatGPT 制定训练规则的参考，不参与 App 网络请求。
 
 把定时任务的输出要求设为：**不要写解释；只输出一个合法 JSON 对象，字段完全遵循本文件下方的接口契约。**
 
