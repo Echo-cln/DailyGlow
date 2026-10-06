@@ -158,9 +158,22 @@ private fun DailyGlowApp(sharedPlanText: String?, sharedPlanIsHistory: Boolean, 
 
     LaunchedEffect(plan) { upsertHistory(context, plan, completed) }
 
-        MaterialTheme {
-            Surface(modifier = Modifier.fillMaxSize(), color = Cashmere) {
-                LazyColumn(
+    var currentTab by remember { mutableStateOf("today") }
+
+    MaterialTheme {
+        Surface(modifier = Modifier.fillMaxSize(), color = Cashmere) {
+            Column(Modifier.fillMaxSize()) {
+                Box(Modifier.weight(1f)) {
+                    when (currentTab) {
+                        "today" -> TodayLandingScreen(
+                            trainingTitle = plan.title,
+                            completed = completed.size,
+                            onTraining = { currentTab = "training" },
+                            onLife = { currentTab = "life" },
+                            context = context
+                        )
+                        "life" -> DailyLifeHub(context)
+                        else -> LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -213,9 +226,12 @@ private fun DailyGlowApp(sharedPlanText: String?, sharedPlanIsHistory: Boolean, 
                         }
                     }
                     item { Box(Modifier.padding(horizontal = 16.dp)) { TipCard() } }
+                    }
                 }
+                DailyGlowNavigationBar(currentTab) { currentTab = it }
             }
         }
+    }
     timerItem?.let { TimerDialog(it, onDismiss = { timerItem = null }) }
     editingItem?.let { target ->
         EditDialog(target, onDismiss = { editingItem = null }, onSave = { changed ->
