@@ -158,7 +158,7 @@ private fun DailyGlowApp(sharedPlanText: String?, sharedPlanIsHistory: Boolean, 
 
     LaunchedEffect(plan) { upsertHistory(context, plan, completed) }
 
-    var currentTab by remember { mutableStateOf("today") }
+    var currentTab by remember { mutableStateOf("life") }
 
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize(), color = Cashmere) {
@@ -172,7 +172,7 @@ private fun DailyGlowApp(sharedPlanText: String?, sharedPlanIsHistory: Boolean, 
                             onLife = { currentTab = "life" },
                             context = context
                         )
-                        "life" -> DailyLifeHub(context, onExit = { currentTab = "today" })
+                        "life" -> DailyLifeHub(context, trainingTitle = plan.title, trainingCompleted = completed.size, onTraining = { currentTab = "training" }, onExit = { currentTab = "today" })
                         else -> LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 16.dp),
