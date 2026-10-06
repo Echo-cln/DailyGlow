@@ -57,6 +57,8 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
 import java.time.LocalDate
+import org.json.JSONArray
+import org.json.JSONObject
 import java.util.Locale
 
 
@@ -84,7 +86,7 @@ fun DailyGlowNavigationBar(selected: String, onSelect: (String) -> Unit) {
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        listOf("today" to "今日", "training" to "训练", "life" to "生活").forEach { (key, label) ->
+        listOf("life" to "每日中心", "growth" to "成长", "insights" to "洞察", "training" to "训练", "today" to "更多").forEach { (key, label) ->
             val active = selected == key
             Text(
                 text = (if (active) "● " else "") + label,
@@ -136,7 +138,19 @@ private fun LifeCardBlock(title: String, body: String, foot: String, action: Str
 }
 
 @Composable
-fun DailyLifeHub(context: Context, trainingTitle: String, trainingCompleted: Int, onTraining: () -> Unit, onExit: () -> Unit = {}) {
+fun DailyLifeHub(
+    context: Context,
+    trainingTitle: String,
+    trainingCompleted: Int,
+    onTraining: () -> Unit,
+    onExit: () -> Unit = {},
+    onOpenGrowth: () -> Unit = {},
+    onOpenInsights: () -> Unit = {},
+    cloudSignedIn: Boolean = false,
+    cloudStatus: String = "",
+    onCloudLogin: () -> Unit = {},
+    onCloudUpload: (String, JSONObject) -> Unit = { _, _ -> }
+) {
     val prefs = remember(context) { context.getSharedPreferences("dailyglow_life", Context.MODE_PRIVATE) }
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     val date = selectedDate.toString()
@@ -200,6 +214,25 @@ fun DailyLifeHub(context: Context, trainingTitle: String, trainingCompleted: Int
             item { LifeDateStrip(selectedDate, isToday, { selectedDate = selectedDate.minusDays(1) }, { if (!isToday) selectedDate = selectedDate.plusDays(1) }) }
             when (section) {
                 "home" -> {
+                    item {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            LifeQuickLink("每日成长", "简报与今日重点", Color(0xFFE4EEF1), onOpenGrowth, Modifier.weight(1f))
+                            LifeQuickLink("洞察", "基金策略与盘中风控", Color(0xFFF4E4DE), onOpenInsights, Modifier.weight(1f))
+                        }
+                    }
+                    item {
+                        LifePaperCard {
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                                Column(Modifier.weight(1f)) {
+                                    LifeSectionTitle(if (cloudSignedIn) "☁ 已连接 DailyGlow 云端" else "☁ 同步到 DailyGlow 云端")
+                                    Text(if (cloudStatus.isNotBlank()) cloudStatus else if (cloudSignedIn) "生活记录可上传，简报从云端读取。" else "使用网页同一邮箱登录后，可读取简报并上传生活记录。", color = LifeInk.copy(alpha = .72f), fontSize = 10.sp)
+                                }
+                                TextButton(onClick = if (cloudSignedIn) { { onCloudUpload(date, dailyLifeSnapshot(prefs, date)) } } else onCloudLogin) {
+                                    Text(if (cloudSignedIn) "上传今日" else "登录", color = LifeBlue)
+                                }
+                            }
+                        }
+                    }
                     item {
                         Row(Modifier.fillMaxWidth().background(LifeCard, RoundedCornerShape(22.dp)).border(1.dp, Color(0xFFF0E7DE), RoundedCornerShape(22.dp)).padding(4.dp)) {
                             listOf("拾光小队", "朋友们陪伴").forEach { mode ->
@@ -424,6 +457,39 @@ fun DailyLifeHub(context: Context, trainingTitle: String, trainingCompleted: Int
         confirmButton = { TextButton(onClick = { customWaterInput.toIntOrNull()?.takeIf { it in 50..2000 }?.let { cupMl = it; prefs.edit().putInt("water_cup_ml_$date", it).apply() }; showWaterCustom = false }) { Text("确定", color = LifeBlue) } },
         dismissButton = { TextButton(onClick = { showWaterCustom = false }) { Text("取消", color = LifeInk) } }
     )
+}
+
+@Composable
+private fun LifeQuickLink(title: String, subtitle: String, tint: Color, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Column(
+        modifier.fillMaxWidth().background(tint, RoundedCornerShape(16.dp)).clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 11.dp),
+        verticalArrangement = Arrangement.spacedBy(3.dp)
+    ) {
+        Text(title, color = LifeBlue, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+        Text(subtitle, color = LifeInk.copy(alpha = .75f), fontSize = 9.sp)
+    }
+}
+
+private fun dailyLifeSnapshot(prefs: android.content.SharedPreferences, date: String): JSONObject {
+    val meals = JSONObject()
+    listOf("早餐", "午餐", "晚餐").forEach { meals.put(it, prefs.getString("meal_${it}_$date", "") ?: "") }
+    val habits = JSONObject()
+        .put("move", prefs.getBoolean("habit_move_$date", false))
+        .put("sleep", prefs.getBoolean("habit_sleep_$date", false))
+    val transactions = JSONArray()
+    (prefs.getString("transactions_$date", "") ?: "").lineSequence().filter(String::isNotBlank).forEach(transactions::put)
+    return JSONObject()
+        .put("water", prefs.getInt("water_$date", 0))
+        .put("waterCupMl", prefs.getInt("water_cup_ml_$date", 300))
+        .put("diary", prefs.getString("diary_$date", "") ?: "")
+        .put("mood", prefs.getString("mood_$date", "") ?: "")
+        .put("outfit", prefs.getString("outfit_$date", "") ?: "")
+        .put("outfitStyle", prefs.getString("outfit_style_$date", "日常") ?: "日常")
+        .put("meals", meals)
+        .put("habits", habits)
+        .put("transactions", transactions)
+        .put("companion", prefs.getString("companion", "拾光小队") ?: "拾光小队")
+        .put("syncedAt", java.time.Instant.now().toString())
 }
 
 @Composable
