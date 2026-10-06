@@ -105,12 +105,17 @@ private fun LifeCardBlock(title: String, body: String, foot: String, action: Str
 @Composable
 fun DailyLifeHub(context: Context) {
     val prefs = remember(context) { context.getSharedPreferences("dailyglow_life", Context.MODE_PRIVATE) }
-    val date = LocalDate.now().toString()
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    val date = selectedDate.toString()
+    val isToday = selectedDate == LocalDate.now()
     var section by remember { mutableStateOf("home") }
     var companion by remember { mutableStateOf(prefs.getString("companion", "拾光小队") ?: "拾光小队") }
     var water by remember(date) { mutableIntStateOf(prefs.getInt("water_$date", 0)) }
     var diary by remember(date) { mutableStateOf(prefs.getString("diary_$date", "") ?: "") }
     var outfit by remember(date) { mutableStateOf(prefs.getString("outfit_$date", "") ?: "") }
+    var closet by remember { mutableStateOf(prefs.getString("closet_items", "") ?: "") }
+    var expenseSource by remember { mutableStateOf("支付宝") }
+    var expenseCategory by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     var transactions by remember { mutableStateOf(prefs.getString("transactions_$date", "") ?: "") }
@@ -130,9 +135,16 @@ fun DailyLifeHub(context: Context) {
                         "wardrobe" -> "衣橱裁缝铺"
                         else -> "每日流水"
                     }, color = LifeBlue, fontWeight = FontWeight.Bold, fontSize = 24.sp)
-                    Text(LocalDate.now().toString(), color = LifeInk.copy(alpha = .7f), fontSize = 13.sp)
+                    Text(todayLabel(selectedDate), color = LifeInk.copy(alpha = .7f), fontSize = 13.sp)
                 }
                 if (section != "home") Text("‹ 返回", Modifier.clickable { section = "home" }.padding(8.dp), color = LifeBlue)
+            }
+        }
+        item {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text("‹ 前一天", Modifier.clickable { selectedDate = selectedDate.minusDays(1) }.padding(vertical = 8.dp), color = LifeBlue)
+                Text(if (isToday) "今天" else "查看记录", color = LifeInk.copy(alpha = .72f), fontSize = 13.sp)
+                Text("后一天 ›", Modifier.clickable(enabled = !isToday) { selectedDate = selectedDate.plusDays(1) }.padding(vertical = 8.dp), color = if (isToday) LifeInk.copy(alpha = .35f) else LifeBlue)
             }
         }
         if (section == "home") {
@@ -155,7 +167,7 @@ fun DailyLifeHub(context: Context) {
                 }
             }
             item { LifeCardBlock("生活邮局", "给今天留一句话", "日记按日期保存", "写日记", LifeCard, { section = "diary" }) }
-            item { LifeCardBlock("今日小确幸", "喝水 $water / 8 杯 · 三餐与习惯记录", "小小照顾也值得记下", "记一杯水", LifeSage, { section = "water" }) }
+            item { LifeCardBlock("今日小确幸", "喝水 $water 杯 · 三餐与习惯记录", "按日期查看与补记", "打开记录", LifeSage, { section = "water" }) }
             item { LifeCardBlock("衣橱裁缝铺", outfit.ifBlank { "记录今天的穿搭" }, "穿搭日记", "打开衣橱", LifePeach, { section = "wardrobe" }) }
             item { LifeCardBlock("每日流水", "记下今天的一笔收支", "记录只保存在本机", "记一笔", LifeCard, { section = "ledger" }) }
         } else if (section == "water") {
@@ -175,6 +187,24 @@ fun DailyLifeHub(context: Context) {
                     }
                 }
             }
+            item {
+                Card(shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = LifeCard)) {
+                    Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("三餐记录", color = LifeBlue, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                        listOf("早餐", "午餐", "晚餐").forEach { meal ->
+                            var mealText by remember(date, meal) { mutableStateOf(prefs.getString("meal_${meal}_$date", "") ?: "") }
+                            OutlinedTextField(value = mealText, onValueChange = { mealText = it }, modifier = Modifier.fillMaxWidth(), label = { Text(meal) }, singleLine = true)
+                            Button(onClick = { prefs.edit().putString("meal_${meal}_$date", mealText).apply(); saved = true }, colors = ButtonDefaults.buttonColors(containerColor = LifePeach)) { Text("保存$meal", color = LifeBlue) }
+                        }
+                        Text("生活习惯", color = LifeBlue, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                        listOf("今天活动过", "按时休息").forEachIndexed { index, label ->
+                            val key = if (index == 0) "habit_move_$date" else "habit_sleep_$date"
+                            var checked by remember(date, key) { mutableStateOf(prefs.getBoolean(key, false)) }
+                            Text((if (checked) "☑ " else "□ ") + label, modifier = Modifier.clickable { checked = !checked; prefs.edit().putBoolean(key, checked).apply() }.padding(vertical = 6.dp), color = LifeInk, fontSize = 15.sp)
+                        }
+                    }
+                }
+            }
         } else if (section == "diary") {
             item { OutlinedTextField(value = diary, onValueChange = { diary = it; saved = false }, modifier = Modifier.fillMaxWidth().height(180.dp), label = { Text("今天有什么想记下？") }) }
             item {
@@ -189,22 +219,44 @@ fun DailyLifeHub(context: Context) {
                     Text(if (saved) "已保存今日穿搭" else "保存今日穿搭", color = LifeBlue)
                 }
             }
+            item { OutlinedTextField(value = closet, onValueChange = { closet = it; saved = false }, modifier = Modifier.fillMaxWidth().height(150.dp), label = { Text("衣橱单品，每行一件") }) }
+            item { Button(onClick = { prefs.edit().putString("closet_items", closet).apply(); saved = true }, colors = ButtonDefaults.buttonColors(containerColor = LifeSage)) { Text(if (saved) "已保存衣物清单" else "保存衣物清单", color = LifeBlue) } }
+            item { Text("照片管理与 AI 穿搭建议将在后续阶段接入。", color = LifeInk.copy(alpha = .68f), fontSize = 12.sp) }
         } else {
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf("农行", "支付宝", "微信").forEach { source ->
+                        Button(onClick = { expenseSource = source }, contentPadding = PaddingValues(horizontal = 10.dp, vertical = 7.dp), colors = ButtonDefaults.buttonColors(containerColor = if (expenseSource == source) LifePeach else LifeSage)) { Text(source, color = LifeBlue, fontSize = 12.sp) }
+                    }
+                }
+            }
             item { OutlinedTextField(value = amount, onValueChange = { amount = it; saved = false }, modifier = Modifier.fillMaxWidth(), label = { Text("金额（元）") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)) }
-            item { OutlinedTextField(value = note, onValueChange = { note = it; saved = false }, modifier = Modifier.fillMaxWidth(), label = { Text("消费说明，例如：早餐") }) }
+            item { OutlinedTextField(value = expenseCategory, onValueChange = { expenseCategory = it; saved = false }, modifier = Modifier.fillMaxWidth(), label = { Text("消费分类，例如：餐饮、交通") }) }
+            item { OutlinedTextField(value = note, onValueChange = { note = it; saved = false }, modifier = Modifier.fillMaxWidth(), label = { Text("备注（可选）") }) }
             item {
                 Button(onClick = {
                     val value = amount.toDoubleOrNull()
                     if (value != null && value > 0) {
-                        transactions = listOfNotNull("$note  -¥${"%.2f".format(value)}", transactions.takeIf { it.isNotBlank() }).joinToString("\n")
-                        prefs.edit().putString("transactions_$date", transactions).apply()
-                        amount = ""; note = ""; saved = true
+                        val newTransactions = listOfNotNull("$expenseSource · ${expenseCategory.ifBlank { "未分类" }} · $note  -¥${"%.2f".format(value)}", transactions.takeIf { it.isNotBlank() }).joinToString("\n")
+                        transactions = newTransactions
+                        prefs.edit().putString("transactions_$date", newTransactions).apply()
+                        amount = ""; note = ""; expenseCategory = ""; saved = true
                     }
                 }, colors = ButtonDefaults.buttonColors(containerColor = LifePeach)) { Text("保存流水", color = LifeBlue) }
             }
-            if (transactions.isNotBlank()) item { Text(transactions, color = LifeInk, lineHeight = 26.sp) }
-            item { Text("截图识别与云端同步会在后续阶段接入；当前流水保存在本机。", color = LifeInk.copy(alpha = .68f), fontSize = 12.sp) }
+            if (transactions.isNotBlank()) item {
+                Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = LifeCard)) {
+                    Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                        Text("今日流水", color = LifeBlue, fontWeight = FontWeight.Bold)
+                        Text(transactions, color = LifeInk, lineHeight = 24.sp)
+                    }
+                }
+            }
+            item { Text("截图导入与识别会在后续阶段接入；当前流水保存在本机。", color = LifeInk.copy(alpha = .68f), fontSize = 12.sp) }
         }
         item { Spacer(Modifier.height(12.dp)) }
     }
 }
+
+
+private fun todayLabel(date: LocalDate): String = "${date.year}年${date.monthValue}月${date.dayOfMonth}日"
