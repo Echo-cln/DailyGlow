@@ -86,7 +86,7 @@ fun DailyGlowNavigationBar(selected: String, onSelect: (String) -> Unit) {
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        listOf("life" to "每日中心", "growth" to "成长", "insights" to "洞察", "training" to "训练", "today" to "更多").forEach { (key, label) ->
+        listOf("life" to "每日中心", "growth" to "成长", "insights" to "洞察", "training" to "训练").forEach { (key, label) ->
             val active = selected == key
             Text(
                 text = (if (active) "● " else "") + label,
@@ -477,7 +477,7 @@ private fun dailyLifeSnapshot(prefs: android.content.SharedPreferences, date: St
         .put("move", prefs.getBoolean("habit_move_$date", false))
         .put("sleep", prefs.getBoolean("habit_sleep_$date", false))
     val transactions = JSONArray()
-    (prefs.getString("transactions_$date", "") ?: "").lineSequence().filter(String::isNotBlank).forEach(transactions::put)
+    (prefs.getString("transactions_$date", "") ?: "").lineSequence().filter(String::isNotBlank).forEach { transactions.put(it) }
     return JSONObject()
         .put("water", prefs.getInt("water_$date", 0))
         .put("waterCupMl", prefs.getInt("water_cup_ml_$date", 300))
