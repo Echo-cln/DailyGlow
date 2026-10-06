@@ -1,6 +1,5 @@
 package com.echo.dailyglow
 
-import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Color
@@ -22,9 +21,10 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 
-class DailyFlowActivity : Activity() {
+class DailyFlowActivity : ComponentActivity() {
     private lateinit var webView: WebView
     private lateinit var progressBar: ProgressBar
     private lateinit var errorPanel: View
