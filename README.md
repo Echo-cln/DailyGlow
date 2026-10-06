@@ -36,6 +36,7 @@ DailyGlow 使用 Kotlin 与 Jetpack Compose 开发。训练区保留原有的计
 - 今日总览连接训练与生活记录入口。
 - 在「拾光小队」和「朋友们陪伴」之间切换角色展示，共用同一份记录。
 - 按日期浏览并记录喝水、三餐、日记、穿搭、生活习惯和手动流水。
+- 生活邮局、衣橱裁缝铺和每日流水已按手绘预览重排为独立页面，包含心情记录、穿搭场景、衣物分类和月度收支摘要。
 - 衣橱支持编辑文字清单；流水可按农行、支付宝、微信和消费分类记录。
 - 可从系统图片选择器选取账单截图，在设备本机运行中文 OCR；识别内容供核对，只有金额唯一时才预填金额，仍需手动确认并保存。
 - 生活记录保存在设备本地，不会自动上传到 GitHub。
@@ -139,7 +140,7 @@ app/build/outputs/apk/debug/app-debug.apk
 
 ## 当前限制
 
-- 生活区仍处于 A 期接入阶段，视觉插画与已确认预览稿的细节还需继续落地。
+- 生活区仍处于 A 期接入阶段；已按三张预览图重排页面并采用对应插画，仍需在手机上检查不同屏幕尺寸与实际操作细节。
 - 自动喝水提醒和衣橱图片管理尚未接入。账单截图 OCR 已接入本机识别，识别准确性需由用户核对。
 - 云同步与 AI 穿搭建议尚未接入。
 - GitHub 计划刷新依赖网络；离线时应用继续使用本地计划。
@@ -170,4 +171,4 @@ app/build/outputs/apk/debug/app-debug.apk
 
 ## English summary
 
-DailyGlow is a Kotlin and Jetpack Compose Android app for workouts and everyday personal records. The existing workout flow remains available alongside an in-progress Life area for hydration, journaling, outfit notes, and manual expenses. Life records are currently stored on-device. Receipt screenshots can be selected for on-device Chinese OCR; the user reviews and saves the extracted entry. Cloud sync and AI outfit advice are not available yet. GitHub Actions successfully built a debug APK for the draft integration branch on 2026-10-06; device-level UI validation is still pending.
+DailyGlow is a Kotlin and Jetpack Compose Android app for workouts and everyday personal records. The existing workout flow remains available alongside an in-progress Life area for hydration, journaling, outfit notes, and manual expenses. The postal diary, wardrobe, and ledger pages have been reorganized around the supplied hand-drawn previews. Life records are currently stored on-device. Receipt screenshots can be selected for on-device Chinese OCR; the user reviews and saves the extracted entry. Cloud sync and AI outfit advice are not available yet. GitHub Actions successfully built a debug APK for the draft integration branch on 2026-10-06; device-level UI validation is still pending.
