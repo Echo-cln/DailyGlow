@@ -148,6 +148,8 @@ fun DailyLifeHub(
     onOpenInsights: () -> Unit = {},
     cloudSignedIn: Boolean = false,
     cloudStatus: String = "",
+    updateStatus: String = "",
+    onCheckUpdate: () -> Unit = {},
     onCloudLogin: () -> Unit = {},
     onCloudUpload: (String, JSONObject) -> Unit = { _, _ -> }
 ) {
@@ -226,9 +228,13 @@ fun DailyLifeHub(
                                 Column(Modifier.weight(1f)) {
                                     LifeSectionTitle(if (cloudSignedIn) "☁ 已连接 DailyGlow 云端" else "☁ 同步到 DailyGlow 云端")
                                     Text(if (cloudStatus.isNotBlank()) cloudStatus else if (cloudSignedIn) "生活记录可上传，简报从云端读取。" else "使用网页同一邮箱登录后，可读取简报并上传生活记录。", color = LifeInk.copy(alpha = .72f), fontSize = 10.sp)
+                                    if (updateStatus.isNotBlank()) Text(updateStatus, color = LifeInk.copy(alpha = .68f), fontSize = 10.sp)
                                 }
-                                TextButton(onClick = { if (cloudSignedIn) onCloudUpload(date, dailyLifeSnapshot(prefs, date)) else onCloudLogin() }) {
-                                    Text(if (cloudSignedIn) "上传今日" else "登录", color = LifeBlue)
+                                Column(horizontalAlignment = Alignment.End) {
+                                    TextButton(onClick = { if (cloudSignedIn) onCloudUpload(date, dailyLifeSnapshot(prefs, date)) else onCloudLogin() }) {
+                                        Text(if (cloudSignedIn) "上传今日" else "登录", color = LifeBlue)
+                                    }
+                                    TextButton(onClick = onCheckUpdate) { Text("检查更新", color = LifeBlue, fontSize = 11.sp) }
                                 }
                             }
                         }
