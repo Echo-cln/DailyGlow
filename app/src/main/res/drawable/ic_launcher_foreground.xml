@@ -1,0 +1,50 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Tiny warm sparkles -->
+    <path android:fillColor="#E6B77E" android:pathData="M27,30 L29,35 L34,37 L29,39 L27,44 L25,39 L20,37 L25,35 Z" />
+    <path android:fillColor="#91BDC2" android:pathData="M80,28 L81.5,32 L85.5,33.5 L81.5,35 L80,39 L78.5,35 L74.5,33.5 L78.5,32 Z" />
+
+    <!-- Soft floppy ears -->
+    <path android:fillColor="#D79B95" android:pathData="M39,37 C33,30 25,33 26,42 C27,50 31,55 38,55 C42,49 42,42 39,37 Z" />
+    <path android:fillColor="#F7D7CD" android:pathData="M36,39 C33,36 30,38 31,43 C32,47 34,49 37,49 C39,46 38,42 36,39 Z" />
+    <path android:fillColor="#D79B95" android:pathData="M69,37 C75,30 83,33 82,42 C81,50 77,55 70,55 C66,49 66,42 69,37 Z" />
+    <path android:fillColor="#F7D7CD" android:pathData="M72,39 C75,36 78,38 77,43 C76,47 74,49 71,49 C69,46 70,42 72,39 Z" />
+
+    <!-- Puppy face -->
+    <path
+        android:fillColor="#FFFDF9"
+        android:strokeColor="#E7E5E0"
+        android:strokeWidth="1.5"
+        android:pathData="M54,29 C42,29 34,38 34,50 C34,63 42,71 54,71 C66,71 74,63 74,50 C74,38 66,29 54,29 Z" />
+    <path android:fillColor="#372A2A" android:pathData="M43.5,48.5 A1.8,1.8 0,1 0,47.1 48.5 A1.8,1.8 0,1 0,43.5 48.5" />
+    <path android:fillColor="#372A2A" android:pathData="M60.9,48.5 A1.8,1.8 0,1 0,64.5 48.5 A1.8,1.8 0,1 0,60.9 48.5" />
+    <path android:fillColor="#F7D7CD" android:pathData="M39,55 C42,52 45,53 47,56 C45,59 41,60 39,58 Z" />
+    <path android:fillColor="#F7D7CD" android:pathData="M61,56 C63,53 66,52 69,55 L69,58 C67,60 63,59 61,56 Z" />
+    <path android:fillColor="#D79B95" android:pathData="M50,54 C50,51 58,51 58,54 C58,57 55,58 54,59 C53,58 50,57 50,54 Z" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#8A6968"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M54,59 L54,61 C52,64 49,64 47,62 M54,61 C56,64 59,64 61,62" />
+
+    <!-- Open little book -->
+    <path android:fillColor="#FFFFFF" android:pathData="M34,73 C41,70 48,72 54,76 C60,72 67,70 74,73 L74,83 C67,81 60,82 54,86 C48,82 41,81 34,83 Z" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#91BDC2"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M34,73 C41,70 48,72 54,76 C60,72 67,70 74,73 L74,83 C67,81 60,82 54,86 C48,82 41,81 34,83 Z M54,76 L54,86" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#D79B95"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M39,76 C43,75 47,76 50,78 M58,78 C62,76 66,75 69,76" />
+</vector>
