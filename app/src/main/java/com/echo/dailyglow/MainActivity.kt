@@ -227,6 +227,7 @@ private fun DailyGlowApp(sharedPlanText: String?, sharedPlanIsHistory: Boolean, 
                     }
                     item { Box(Modifier.padding(horizontal = 16.dp)) { TipCard() } }
                     }
+                    }
                 }
                 DailyGlowNavigationBar(currentTab) { currentTab = it }
             }
