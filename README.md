@@ -37,6 +37,7 @@ DailyGlow 使用 Kotlin 与 Jetpack Compose 开发。训练区保留原有的计
 - 在「拾光小队」和「朋友们陪伴」之间切换角色展示，共用同一份记录。
 - 按日期浏览并记录喝水、三餐、日记、穿搭、生活习惯和手动流水。
 - 衣橱支持编辑文字清单；流水可按农行、支付宝、微信和消费分类记录。
+- 可从系统图片选择器选取账单截图，在设备本机运行中文 OCR；识别内容供核对，只有金额唯一时才预填金额，仍需手动确认并保存。
 - 生活记录保存在设备本地，不会自动上传到 GitHub。
 
 ## 项目结构
@@ -132,14 +133,14 @@ app/build/outputs/apk/debug/app-debug.apk
 
 - 训练计划与完成状态保存在应用本地；默认训练计划文件随代码提供。
 - 生活区 A 期的喝水、日记、穿搭和支出记录保存在 Android 应用私有目录中的本地偏好存储。
-- 当前版本不提供账号体系、跨设备云同步、账单截图上传或云端 OCR。
+- 当前版本不提供账号体系、跨设备云同步或云端 OCR。
 - 公共仓库只应保存示例计划和代码。不要提交真实流水、日记、穿搭照片、账号凭据或密钥。
 - 本地记录暂未做应用级加密；使用者应设置设备锁屏，并避免在共享设备上保存敏感内容。
 
 ## 当前限制
 
 - 生活区仍处于 A 期接入阶段，视觉插画与已确认预览稿的细节还需继续落地。
-- 自动喝水提醒、衣橱图片管理、账单截图识别和 OCR 尚未接入。
+- 自动喝水提醒和衣橱图片管理尚未接入。账单截图 OCR 已接入本机识别，识别准确性需由用户核对。
 - 云同步与 AI 穿搭建议尚未接入。
 - GitHub 计划刷新依赖网络；离线时应用继续使用本地计划。
 - Android CI 的 `assembleDebug` 已通过，并上传了临时 debug APK 工件；构建通过不等于真机体验验收。PR 仍为草稿，尚未合并或正式发布。
@@ -153,7 +154,8 @@ app/build/outputs/apk/debug/app-debug.apk
 - [x] 增加按日记录与历史浏览、基础三餐/习惯、文字衣橱和支付渠道分类流水（A 期）。
 - [ ] 增加喝水提醒、衣橱图片管理与更完整的穿搭历史分析。
 - [ ] 设计私有云同步与备份；未经确认不上传私人记录。
-- [ ] 评估端侧账单识别与穿搭视觉建议。
+- [x] 接入端侧中文账单截图识别与人工确认保存。
+- [ ] 评估穿搭视觉建议。
 
 ## 开发与贡献
 
@@ -168,4 +170,4 @@ app/build/outputs/apk/debug/app-debug.apk
 
 ## English summary
 
-DailyGlow is a Kotlin and Jetpack Compose Android app for workouts and everyday personal records. The existing workout flow remains available alongside an in-progress Life area for hydration, journaling, outfit notes, and manual expenses. Life records are currently stored on-device. Cloud sync, receipt OCR, and AI outfit advice are not available yet. GitHub Actions successfully built a debug APK for the draft integration branch on 2026-10-06; device-level UI validation is still pending.
+DailyGlow is a Kotlin and Jetpack Compose Android app for workouts and everyday personal records. The existing workout flow remains available alongside an in-progress Life area for hydration, journaling, outfit notes, and manual expenses. Life records are currently stored on-device. Receipt screenshots can be selected for on-device Chinese OCR; the user reviews and saves the extracted entry. Cloud sync and AI outfit advice are not available yet. GitHub Actions successfully built a debug APK for the draft integration branch on 2026-10-06; device-level UI validation is still pending.
