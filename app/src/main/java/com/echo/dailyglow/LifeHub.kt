@@ -42,6 +42,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
 import java.time.LocalDate
+import java.util.Locale
 
 private val LifePaper = Color(0xFFFFFAF4)
 private val LifeCard = Color(0xFFFFFDF9)
