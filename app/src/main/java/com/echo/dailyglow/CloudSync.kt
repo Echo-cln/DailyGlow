@@ -1,6 +1,44 @@
 package com.echo.dailyglow
 
 import android.content.Context
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
@@ -224,5 +262,150 @@ class DailyGlowCloud(private val context: Context) {
 
     companion object {
         private const val KEY_ALIAS = "dailyglow_cloud_session_key"
+    }
+}
+
+
+@Composable
+fun DailyGlowLoginDialog(onDismiss: () -> Unit, onSuccess: () -> Unit) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf("") }
+    var busy by remember { mutableStateOf(false) }
+    AlertDialog(
+        onDismissRequest = { if (!busy) onDismiss() },
+        title = { Text("登录 DailyGlow 云端", color = Color(0xFF496B80), fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("使用网页版同一邮箱与密码，简报和生活记录即可在设备间同步。", color = Color(0xFF625F5B), fontSize = 13.sp)
+                OutlinedTextField(email, { email = it; error = "" }, label = { Text("邮箱") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(password, { password = it; error = "" }, label = { Text("密码") }, visualTransformation = PasswordVisualTransformation(), singleLine = true, modifier = Modifier.fillMaxWidth())
+                if (error.isNotBlank()) Text(error, color = Color(0xFFB25C56), fontSize = 12.sp)
+            }
+        },
+        confirmButton = {
+            TextButton(enabled = !busy, onClick = {
+                if (email.isBlank() || password.isBlank()) { error = "请输入邮箱和密码"; return@TextButton }
+                busy = true
+                scope.launch {
+                    try {
+                        DailyGlowCloud(context).signIn(email, password)
+                        onSuccess()
+                    } catch (e: Exception) { error = e.message ?: "登录失败，请检查网络和账号"; }
+                    finally { busy = false }
+                }
+            }) { if (busy) CircularProgressIndicator(Modifier.width(18.dp), strokeWidth = 2.dp) else Text("登录并继续", color = Color(0xFF496B80)) }
+        },
+        dismissButton = { TextButton(enabled = !busy, onClick = onDismiss) { Text("稍后", color = Color(0xFF625F5B)) } },
+        containerColor = Color(0xFFFFFCF7)
+    )
+}
+
+@Composable
+fun DailyGlowCloudContent(
+    page: String,
+    sessionVersion: Int,
+    onLogin: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val isInsights = page == "insights"
+    var selectedDate by remember { mutableStateOf(java.time.LocalDate.now()) }
+    var selectedType by remember { mutableStateOf("growth_brief") }
+    var rows by remember { mutableStateOf<List<JSONObject>>(emptyList()) }
+    var loading by remember { mutableStateOf(false) }
+    var message by remember { mutableStateOf("") }
+    val signedIn = remember(sessionVersion) { DailyGlowCloud(context).hasStoredSession() }
+    val accent = when (selectedType) {
+        "fund_strategy" -> Color(0xFFDA8C7E)
+        "market_intraday" -> Color(0xFF7FAF8C)
+        else -> Color(0xFF85ABC0)
+    }
+    LaunchedEffect(page, selectedDate, selectedType, sessionVersion) {
+        rows = emptyList()
+        message = ""
+        if (!signedIn) return@LaunchedEffect
+        loading = true
+        try {
+            val result = DailyGlowCloud(context).fetchDailyHub(selectedDate.toString())
+            rows = (0 until result.length()).mapNotNull { result.optJSONObject(it) }
+                .filter { row ->
+                    val type = row.optString("content_type")
+                    if (isInsights) type in setOf("growth_brief", "fund_strategy", "market_intraday")
+                    else type == "growth_brief"
+                }
+                .filter { !isInsights || it.optString("content_type") == selectedType }
+            if (rows.isEmpty()) message = "这一天还没有同步的内容。"
+        } catch (e: Exception) { message = e.message ?: "云端暂时无法连接" }
+        finally { loading = false }
+    }
+
+    val header = if (isInsights) "洞察" else "每日成长"
+    val kindTitle = when (selectedType) {
+        "fund_strategy" -> "基金策略"
+        "market_intraday" -> "盘中风控"
+        else -> "成长简报"
+    }
+    Column(modifier.fillMaxSize().background(Color(0xFFFFFAF4))) {
+        Column(Modifier.fillMaxWidth().background(accent.copy(alpha = .16f)).padding(horizontal = 20.dp, vertical = 18.dp)) {
+            Text(header, color = Color(0xFF496B80), fontSize = 28.sp, fontWeight = FontWeight.Bold)
+            Text(if (isInsights) "成长、基金与盘中风险，一页查阅。" else "今日关注与学习灵感。", color = Color(0xFF625F5B), fontSize = 13.sp)
+        }
+        if (isInsights) {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                listOf("growth_brief" to "成长洞察", "fund_strategy" to "基金策略", "market_intraday" to "盘中风险").forEach { (type, label) ->
+                    val tint = when (type) { "fund_strategy" -> Color(0xFFDA8C7E); "market_intraday" -> Color(0xFF7FAF8C); else -> Color(0xFF85ABC0) }
+                    Text(label, Modifier.weight(1f).background(if (selectedType == type) tint.copy(alpha = .22f) else Color.White, RoundedCornerShape(18.dp)).clickable { selectedType = type }.padding(vertical = 10.dp),
+                        textAlign = TextAlign.Center, color = Color(0xFF496B80), fontSize = 11.sp, fontWeight = if (selectedType == type) FontWeight.SemiBold else FontWeight.Normal)
+                }
+            }
+        }
+        Row(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 6.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text("‹ 前一天", Modifier.clickable { selectedDate = selectedDate.minusDays(1) }.padding(8.dp), color = Color(0xFF496B80))
+            Text("${selectedDate.year}年${selectedDate.monthValue}月${selectedDate.dayOfMonth}日", color = Color(0xFF496B80), fontWeight = FontWeight.SemiBold)
+            Text("后一天 ›", Modifier.clickable { if (selectedDate < java.time.LocalDate.now()) selectedDate = selectedDate.plusDays(1) }.padding(8.dp), color = if (selectedDate < java.time.LocalDate.now()) Color(0xFF496B80) else Color.LightGray)
+        }
+        when {
+            !signedIn -> Column(Modifier.weight(1f).padding(22.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("登录后查看你的云端内容", color = Color(0xFF496B80), fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(10.dp))
+                Button(onClick = onLogin, colors = ButtonDefaults.buttonColors(containerColor = accent)) { Text("登录 DailyGlow", color = Color.White) }
+            }
+            loading -> Column(Modifier.weight(1f).fillMaxWidth(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) { CircularProgressIndicator(color = accent) }
+            rows.isEmpty() -> Column(Modifier.weight(1f).padding(24.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) { Text(message, color = Color(0xFF625F5B), textAlign = TextAlign.Center) }
+            else -> LazyColumn(Modifier.weight(1f), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(rows) { row ->
+                    val payload = row.optJSONObject("payload") ?: JSONObject()
+                    val doc = payload.optJSONObject("document")
+                    val body = doc?.optString("body").orEmpty().ifBlank { payload.optString("body") }.ifBlank { payload.toString(2) }
+                    Column(Modifier.fillMaxWidth().background(Color.White, RoundedCornerShape(20.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                        Text(row.optString("title", kindTitle), color = accent, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        if (row.optString("summary").isNotBlank()) Text(row.optString("summary"), color = Color(0xFF625F5B), fontSize = 13.sp, lineHeight = 20.sp)
+                        DailyGlowDocument(body, accent)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DailyGlowDocument(body: String, accent: Color) {
+    Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+        body.lineSequence().filter { it.isNotBlank() }.take(500).forEach { raw ->
+            val line = raw.trim()
+                .replace(Regex("^#{1,6}\\s*"), "")
+                .replace(Regex("^[-•●▪]\\s*"), "• ")
+                .replace(Regex("^\\d+[.)、]\\s*"), "• ")
+                .replace(Regex("\\*\\*|__"), "")
+                .replace(Regex("\\[([^]]+)]\\([^)]*\\)"), "$1")
+                .replace("|", "  ·  ")
+            val heading = raw.trim().startsWith("#") || raw.trim().matches(Regex("^[一二三四五六七八九十]+[、.].*"))
+            Text(line, color = if (heading) accent else Color(0xFF514D49), fontSize = if (heading) 15.sp else 12.sp,
+                fontWeight = if (heading) FontWeight.Bold else FontWeight.Normal, lineHeight = if (heading) 21.sp else 19.sp)
+        }
     }
 }
