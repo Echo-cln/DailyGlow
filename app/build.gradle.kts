@@ -13,9 +13,24 @@ android {
         applicationId = "com.echo.dailyglow"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = providers.gradleProperty("appVersionCode").orNull?.toInt() ?: 3
+        versionName = providers.gradleProperty("appVersionName").orNull ?: "1.2.0"
         buildConfigField("String", "PLAN_ENDPOINT", "\"https://raw.githubusercontent.com/Echo-cln/DailyGlow/main/app/src/main/assets/today_plan.json\"")
+        buildConfigField("String", "DAILYFLOW_URL", "\"https://dailygrowth-zbwe4vjk.edgeone.cool/\"")
+    }
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("ANDROID_KEYSTORE_PATH") ?: "missing-release-key.jks")
+            storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+            keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
