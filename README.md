@@ -4,7 +4,7 @@
 
 DailyGlow 使用 Kotlin 与 Jetpack Compose 开发。训练区保留原有的计时训练体验；生活区采用独立的柔和手绘视觉方向，提供喝水、日记、穿搭和流水记录。两个区域属于同一个 App，但各自保留清楚的界面风格。
 
-> **当前状态：A 期开发中。** 训练功能已有可运行版本；生活区正在接入。当前融合代码位于草稿 PR，尚未合并或完成 Android 构建验证。
+> **当前状态：A 期开发中。** 训练功能已有可运行版本；生活区正在接入。融合代码位于草稿 PR。GitHub Actions 已成功构建 debug APK（2026-10-06）；界面仍需在 Android Studio 模拟器或真机验收。
 
 ## 目录
 
@@ -85,7 +85,7 @@ DailyGlow/
 macOS / Linux：
 
 ```bash
-./gradlew assembleDebug
+bash ./gradlew assembleDebug
 ```
 
 Windows PowerShell：
@@ -141,7 +141,7 @@ app/build/outputs/apk/debug/app-debug.apk
 - 自动喝水提醒、三餐/习惯历史、衣橱图片管理、收支分类统计和账单截图识别尚未接入。
 - 云同步与 AI 穿搭建议尚未接入。
 - GitHub 计划刷新依赖网络；离线时应用继续使用本地计划。
-- 此次融合 PR 尚未取得 Android 构建通过结果；PR 中已配置 GitHub Actions 构建工作流，但目前尚无工作流运行记录，请勿将草稿分支视为正式发布版。
+- Android CI 的 `assembleDebug` 已通过，并上传了临时 debug APK 工件；构建通过不等于真机体验验收。PR 仍为草稿，尚未合并或正式发布。
 
 ## 开发路线
 
@@ -156,7 +156,7 @@ app/build/outputs/apk/debug/app-debug.apk
 ## 开发与贡献
 
 - 使用功能分支提交修改，并通过 Pull Request 合并。
-- 提交前运行 `./gradlew assembleDebug`，并在模拟器或真机检查页面尺寸、导航和数据保存。
+- 提交前运行 `bash ./gradlew assembleDebug`，并在模拟器或真机检查页面尺寸、导航和数据保存。
 - 不要提交 `local.properties`、密钥、真实账户信息、个人日记、流水或私密照片。
 - 报告问题时请说明 Android 版本、设备/模拟器、复现步骤和预期结果。
 
@@ -166,4 +166,4 @@ app/build/outputs/apk/debug/app-debug.apk
 
 ## English summary
 
-DailyGlow is a Kotlin and Jetpack Compose Android app for workouts and everyday personal records. The existing workout flow remains available alongside an in-progress Life area for hydration, journaling, outfit notes, and manual expenses. Life records are currently stored on-device. Cloud sync, receipt OCR, and AI outfit advice are not available yet. The integration branch is a draft and has not passed an Android build in this workspace.
+DailyGlow is a Kotlin and Jetpack Compose Android app for workouts and everyday personal records. The existing workout flow remains available alongside an in-progress Life area for hydration, journaling, outfit notes, and manual expenses. Life records are currently stored on-device. Cloud sync, receipt OCR, and AI outfit advice are not available yet. GitHub Actions successfully built a debug APK for the draft integration branch on 2026-10-06; device-level UI validation is still pending.
