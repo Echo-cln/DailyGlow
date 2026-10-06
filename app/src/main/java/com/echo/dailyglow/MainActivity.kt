@@ -70,6 +70,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.statusBarsPadding
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.HttpURLConnection
@@ -159,6 +161,12 @@ private fun DailyGlowApp(sharedPlanText: String?, sharedPlanIsHistory: Boolean, 
     LaunchedEffect(plan) { upsertHistory(context, plan, completed) }
 
     var currentTab by remember { mutableStateOf("life") }
+    val cloud = remember(context) { DailyGlowCloud(context) }
+    val cloudScope = rememberCoroutineScope()
+    var cloudSignedIn by remember { mutableStateOf(cloud.hasStoredSession()) }
+    var cloudSessionVersion by remember { mutableIntStateOf(if (cloudSignedIn) 1 else 0) }
+    var showCloudLogin by remember { mutableStateOf(false) }
+    var cloudStatus by remember { mutableStateOf("") }
 
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize(), color = Cashmere) {
@@ -172,7 +180,32 @@ private fun DailyGlowApp(sharedPlanText: String?, sharedPlanIsHistory: Boolean, 
                             onLife = { currentTab = "life" },
                             context = context
                         )
-                        "life" -> DailyLifeHub(context, trainingTitle = plan.title, trainingCompleted = completed.size, onTraining = { currentTab = "training" }, onExit = { currentTab = "today" })
+                        "life" -> DailyLifeHub(
+                            context = context,
+                            trainingTitle = plan.title,
+                            trainingCompleted = completed.size,
+                            onTraining = { currentTab = "training" },
+                            onExit = { currentTab = "today" },
+                            onOpenGrowth = { currentTab = "growth" },
+                            onOpenInsights = { currentTab = "insights" },
+                            cloudSignedIn = cloudSignedIn,
+                            cloudStatus = cloudStatus,
+                            onCloudLogin = { showCloudLogin = true },
+                            onCloudUpload = { date, payload ->
+                                if (!cloudSignedIn) showCloudLogin = true
+                                else cloudScope.launch {
+                                    cloudStatus = "正在同步到云端…"
+                                    try {
+                                        cloud.uploadLifeSnapshot(date, payload)
+                                        cloudStatus = "已同步到云端 · $date"
+                                    } catch (e: Exception) {
+                                        cloudStatus = e.message ?: "同步失败，请检查网络"
+                                    }
+                                }
+                            }
+                        )
+                        "growth" -> DailyGlowCloudContent("growth", cloudSessionVersion, onLogin = { showCloudLogin = true })
+                        "insights" -> DailyGlowCloudContent("insights", cloudSessionVersion, onLogin = { showCloudLogin = true })
                         else -> LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 16.dp),
@@ -244,6 +277,15 @@ private fun DailyGlowApp(sharedPlanText: String?, sharedPlanIsHistory: Boolean, 
     importError?.let { message ->
         AlertDialog(onDismissRequest = { importError = null }, title = { Text("导入失败") }, text = { Text(message) }, confirmButton = { Button(onClick = { importError = null }) { Text("知道了") } })
     }
+    if (showCloudLogin) DailyGlowLoginDialog(
+        onDismiss = { showCloudLogin = false },
+        onSuccess = {
+            cloudSignedIn = true
+            cloudSessionVersion += 1
+            showCloudLogin = false
+            cloudStatus = "已连接 DailyGlow 云端"
+        }
+    )
 }
 
 @Composable
