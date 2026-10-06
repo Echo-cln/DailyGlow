@@ -6,6 +6,7 @@ import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -41,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
@@ -312,13 +314,32 @@ fun DailyLifeHub(context: Context, onExit: () -> Unit = {}) {
                             Text("¥${"%.2f".format(Locale.US, monthlyTotal)}", color = LifeBlue, fontSize = 30.sp, fontWeight = FontWeight.Bold)
                             Text("本机记录的支出合计", color = LifeInk.copy(alpha = .7f), fontSize = 12.sp)
                             if (categoryTotals.isEmpty()) Text("记录几笔后，这里会汇总消费分类。", color = LifeInk.copy(alpha = .7f), fontSize = 13.sp)
-                            categoryTotals.take(4).forEach { (category, total) ->
-                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text(category, color = LifeInk, fontSize = 13.sp)
-                                    Text("¥${"%.2f".format(Locale.US, total)}", color = LifeBlue, fontSize = 13.sp)
-                                }
-                                Box(Modifier.fillMaxWidth().height(7.dp).background(Color(0xFFE9E5DD), RoundedCornerShape(8.dp))) {
-                                    Box(Modifier.fillMaxWidth(if (monthlyTotal > 0) (total / monthlyTotal).toFloat().coerceIn(.02f, 1f) else 0f).height(7.dp).background(LifePeach, RoundedCornerShape(8.dp)))
+                            if (categoryTotals.isNotEmpty()) {
+                                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                    Box(Modifier.size(124.dp), contentAlignment = Alignment.Center) {
+                                        Canvas(Modifier.size(112.dp)) {
+                                            val colors = listOf(LifePeach, Color(0xFFD7EAF0), LifeSage, Color(0xFFF3E0C8))
+                                            var startAngle = -90f
+                                            categoryTotals.take(4).forEachIndexed { index, entry ->
+                                                val sweep = (entry.second / monthlyTotal * 360f).toFloat()
+                                                drawArc(colors[index % colors.size], startAngle, sweep, false, style = Stroke(width = 19.dp.toPx()))
+                                                startAngle += sweep
+                                            }
+                                        }
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                            Text("¥${"%.0f".format(Locale.US, monthlyTotal)}", color = LifeBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                            Text("本月支出", color = LifeInk.copy(alpha = .7f), fontSize = 9.sp)
+                                        }
+                                    }
+                                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                                        categoryTotals.take(4).forEachIndexed { index, (category, total) ->
+                                            val share = if (monthlyTotal > 0) (total / monthlyTotal * 100).toInt() else 0
+                                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                                Text("● $category", color = LifeBlue, fontSize = 11.sp)
+                                                Text("$share%  ¥${"%.2f".format(Locale.US, total)}", color = LifeInk, fontSize = 10.sp)
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
