@@ -13,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -494,7 +495,7 @@ private fun LifeSectionTitle(text: String) {
 }
 
 @Composable
-private fun LifePaperCard(content: @Composable Column.() -> Unit) {
+private fun LifePaperCard(content: @Composable ColumnScope.() -> Unit) {
     Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = LifeCard), modifier = Modifier.fillMaxWidth().border(1.dp, Color(0xFFF0E9E0), RoundedCornerShape(20.dp))) {
         Column(Modifier.fillMaxWidth().padding(15.dp), verticalArrangement = Arrangement.spacedBy(10.dp), content = content)
     }
