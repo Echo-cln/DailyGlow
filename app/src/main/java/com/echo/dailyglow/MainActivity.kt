@@ -167,6 +167,8 @@ private fun DailyGlowApp(sharedPlanText: String?, sharedPlanIsHistory: Boolean, 
     var cloudSessionVersion by remember { mutableIntStateOf(if (cloudSignedIn) 1 else 0) }
     var showCloudLogin by remember { mutableStateOf(false) }
     var cloudStatus by remember { mutableStateOf("") }
+    var appUpdateStatus by remember { mutableStateOf("") }
+    var availableRelease by remember { mutableStateOf<DailyGlowRelease?>(null) }
 
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize(), color = Cashmere) {
@@ -191,6 +193,18 @@ private fun DailyGlowApp(sharedPlanText: String?, sharedPlanIsHistory: Boolean, 
                             cloudSignedIn = cloudSignedIn,
                             cloudStatus = cloudStatus,
                             onCloudLogin = { showCloudLogin = true },
+                            updateStatus = appUpdateStatus,
+                            onCheckUpdate = {
+                                cloudScope.launch {
+                                    appUpdateStatus = "正在检查版本…"
+                                    try {
+                                        availableRelease = checkDailyGlowRelease(context)
+                                        appUpdateStatus = if (availableRelease == null) "当前已是最新版本，或暂无正式安装包。" else "发现新版本 ${availableRelease?.version}。"
+                                    } catch (error: Exception) {
+                                        appUpdateStatus = error.message ?: "检查更新失败，请稍后重试。"
+                                    }
+                                }
+                            },
                             onCloudUpload = { date, payload ->
                                 if (!cloudSignedIn) showCloudLogin = true
                                 else cloudScope.launch {
@@ -277,6 +291,11 @@ private fun DailyGlowApp(sharedPlanText: String?, sharedPlanIsHistory: Boolean, 
     importError?.let { message ->
         AlertDialog(onDismissRequest = { importError = null }, title = { Text("导入失败") }, text = { Text(message) }, confirmButton = { Button(onClick = { importError = null }) { Text("知道了") } })
     }
+    DailyGlowUpdateDialog(
+        release = availableRelease,
+        onDismiss = { availableRelease = null },
+        onStatus = { appUpdateStatus = it }
+    )
     if (showCloudLogin) DailyGlowLoginDialog(
         onDismiss = { showCloudLogin = false },
         onSuccess = {
