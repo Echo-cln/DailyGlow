@@ -16,6 +16,8 @@ android {
         versionCode = 1
         versionName = "1.0.0"
         buildConfigField("String", "PLAN_ENDPOINT", "\"https://raw.githubusercontent.com/Echo-cln/DailyGlow/main/app/src/main/assets/today_plan.json\"")
+        buildConfigField("String", "SUPABASE_URL", "\"https://bwqtqwlutkjuwwvymyqs.supabase.co\"")
+        buildConfigField("String", "SUPABASE_PUBLISHABLE_KEY", "\"sb_publishable_YegHzuT4WYAbUNuTpn76vg_EuFd4_ed\"")
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
