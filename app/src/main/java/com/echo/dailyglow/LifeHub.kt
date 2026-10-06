@@ -227,7 +227,7 @@ fun DailyLifeHub(
                                     LifeSectionTitle(if (cloudSignedIn) "☁ 已连接 DailyGlow 云端" else "☁ 同步到 DailyGlow 云端")
                                     Text(if (cloudStatus.isNotBlank()) cloudStatus else if (cloudSignedIn) "生活记录可上传，简报从云端读取。" else "使用网页同一邮箱登录后，可读取简报并上传生活记录。", color = LifeInk.copy(alpha = .72f), fontSize = 10.sp)
                                 }
-                                TextButton(onClick = if (cloudSignedIn) { { onCloudUpload(date, dailyLifeSnapshot(prefs, date)) } } else onCloudLogin) {
+                                TextButton(onClick = { if (cloudSignedIn) onCloudUpload(date, dailyLifeSnapshot(prefs, date)) else onCloudLogin() }) {
                                     Text(if (cloudSignedIn) "上传今日" else "登录", color = LifeBlue)
                                 }
                             }
@@ -462,7 +462,7 @@ fun DailyLifeHub(
 @Composable
 private fun LifeQuickLink(title: String, subtitle: String, tint: Color, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Column(
-        modifier.fillMaxWidth().background(tint, RoundedCornerShape(16.dp)).clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 11.dp),
+        modifier.background(tint, RoundedCornerShape(16.dp)).clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 11.dp),
         verticalArrangement = Arrangement.spacedBy(3.dp)
     ) {
         Text(title, color = LifeBlue, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
@@ -485,6 +485,7 @@ private fun dailyLifeSnapshot(prefs: android.content.SharedPreferences, date: St
         .put("mood", prefs.getString("mood_$date", "") ?: "")
         .put("outfit", prefs.getString("outfit_$date", "") ?: "")
         .put("outfitStyle", prefs.getString("outfit_style_$date", "日常") ?: "日常")
+        .put("closet", prefs.getString("closet_items", "") ?: "")
         .put("meals", meals)
         .put("habits", habits)
         .put("transactions", transactions)
