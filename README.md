@@ -1,46 +1,156 @@
-# DailyGlow · 每日训练
+# DailyGlow Android
 
-原生 Android（Kotlin + Jetpack Compose）训练清单应用。可在 Android Studio 打开 `DailyGlow/` 后直接运行或生成 APK。
+**一款面向个人日常的 Android 应用：把每日训练与轻量生活记录放在同一个入口里。**
 
-## 已完成
+DailyGlow 使用 Kotlin 与 Jetpack Compose 开发。训练区保留原有的计时训练体验；生活区采用独立的柔和手绘视觉方向，提供喝水、日记、穿搭和流水记录。两个区域属于同一个 App，但各自保留清楚的界面风格。
 
-- 按阶段展示今日训练；计时训练可开始、暂停、每次调节 5 秒。
-- 计次数和组数可在卡片内编辑；完成状态按日期保存。
-- “看姿势”跳转小红书搜索；“打开网易云”尝试唤起网易云音乐。
-- 离线优先，内置 `app/src/main/assets/today_plan.json`；未联网也可训练。
-- 已接入 GitHub 云端计划：App 读取仓库内 `app/src/main/assets/today_plan.json` 的 Raw 地址；App 点击右上角刷新即可同步，网络失败会保留现有计划。
-- 可接收其他 Android 应用通过系统“分享”发送的纯文本 JSON；这不是 ChatGPT 的固定导入方式。
+> **当前状态：A 期开发中。** 训练功能已有可运行版本；生活区正在接入。当前融合代码位于草稿 PR，尚未合并或完成 Android 构建验证。
 
-## 打包安装
+## 目录
 
-1. Android Studio 打开本目录，按提示使用 JDK 17 和 Android SDK 35。
-2. 等待 Gradle Sync 完成，连接手机后点击 Run；或 Build → Build APK(s)。
-3. 安装 `app/build/outputs/apk/debug/app-debug.apk` 到 Android 8.0 及以上设备。
+- [功能](#功能)
+- [项目结构](#项目结构)
+- [技术栈](#技术栈)
+- [运行项目](#运行项目)
+- [训练计划格式](#训练计划格式)
+- [数据与隐私](#数据与隐私)
+- [当前限制](#当前限制)
+- [开发路线](#开发路线)
+- [English summary](#english-summary)
 
-项目允许使用本机已有 JDK（包括 JDK 22）运行 Gradle，同时将 Java/Kotlin 产物统一编译为 JVM 17；因此**不需要安装 JDK 17**。若 Android Studio 提示 JDK 版本不支持，再将 **Settings → Build Tools → Gradle → Gradle JDK** 设为 Android Studio 自带的 Embedded JDK。
+## 功能
 
-## 与 ChatGPT 定时任务配合（推荐）
+### 训练
 
-ChatGPT 分享对话和定时任务不是可调用 API，不能被 App 自动抓取；ChatGPT 也不能保证把单条任务结果通过 Android 系统分享给 DailyGlow。唯一可靠闭环是：定时任务按固定 JSON 格式生成当天计划 → 将 JSON 提交到本仓库的 `app/src/main/assets/today_plan.json` → App 点击右上角刷新。聊天记录链接只作为你和 ChatGPT 制定训练规则的参考，不参与 App 网络请求。
+- 按阶段查看今日训练计划。
+- 支持计时、次数、组数和完成状态记录。
+- 训练动作可编辑，计时器支持开始、暂停和调整。
+- 查看训练历史，并把历史计划导入今天。
+- 训练计划可从内置 JSON 加载；网络可用时可刷新 GitHub 上的计划文件。
+- 动作示范通过小红书搜索打开；音乐入口尝试打开网易云音乐。
 
-把定时任务的输出要求设为：**不要写解释；只输出一个合法 JSON 对象，字段完全遵循本文件下方的接口契约。**
+### 生活记录（A 期接入中）
 
-> 每天更新训练：在 GitHub 编辑并提交 `app/src/main/assets/today_plan.json`，随后打开 App 点击刷新。App 请求会自动附带时间戳，避免读取 CDN 缓存。
+- 今日总览连接训练与生活记录入口。
+- 在「拾光小队」和「朋友们陪伴」之间切换角色展示，共用同一份记录。
+- 按日期记录喝水、日记、穿搭和手动支出。
+- 生活记录保存在设备本地，不会自动上传到 GitHub。
 
-## 云端接口契约
+## 项目结构
 
-`GET /api/v1/plans/today` 返回 HTTP 200 和 JSON；字段与内置 `today_plan.json` 完全一致。服务端应根据当天日期返回该日计划，App 不提交任何运动数据。
+```text
+DailyGlow/
+├── app/
+│   └── src/main/
+│       ├── assets/
+│       │   └── today_plan.json       # 离线默认训练计划
+│       └── java/com/echo/dailyglow/
+│           ├── MainActivity.kt       # App 导航与训练主流程
+│           ├── LifeHub.kt            # 生活区 A 期界面与本地记录
+│           └── HistoryActivity.kt    # 训练历史
+├── build.gradle.kts
+└── settings.gradle.kts
+```
+
+目前项目使用单一 Android 应用模块。功能按页面与数据职责拆分；后续功能稳定后，再按需要提取独立 Gradle feature modules。
+
+## 技术栈
+
+- Kotlin
+- Android SDK 35
+- Jetpack Compose、Material 3
+- Gradle Kotlin DSL
+- 最低 Android 版本：Android 8.0（API 26）
+- Java / Kotlin JVM target：17
+
+## 运行项目
+
+### 环境要求
+
+- Android Studio
+- JDK 17，或 Android Studio 自带的 Embedded JDK
+- Android SDK Platform 35
+- Android 8.0（API 26）或更高版本的模拟器/设备
+
+### Android Studio
+
+1. 克隆仓库并在 Android Studio 中打开项目根目录。
+2. 等待 Gradle Sync 完成。
+3. 连接设备或启动模拟器，点击 **Run**。
+
+### 命令行
+
+macOS / Linux：
+
+```bash
+./gradlew assembleDebug
+```
+
+Windows PowerShell：
+
+```powershell
+.\gradlew.bat assembleDebug
+```
+
+Debug APK 默认生成在：
+
+```text
+app/build/outputs/apk/debug/app-debug.apk
+```
+
+## 训练计划格式
+
+应用内置计划位于 `app/src/main/assets/today_plan.json`。每个动作的 `id` 在当天必须唯一；`kind` 使用 `TIME`（秒）或 `REPS`（次数）。
 
 ```json
 {
-  "date": "2026-09-24",
-  "title": "腹部核心 · 第 2 天",
+  "date": "2026-10-06",
+  "title": "臀腿训练",
   "note": "动作质量优先。",
-  "playlist": "轻快电子 / 100–120 BPM",
+  "playlist": "热身、主训练与拉伸曲目",
   "items": [
-    {"id":"plank","phase":"训练阶段","name":"平板支撑","instruction":"肩在肘正上方，收腹。","kind":"TIME","value":25,"sets":3,"tutorialQuery":"平板支撑 正确姿势"}
+    {
+      "id": "glute-bridge",
+      "phase": "训练阶段",
+      "name": "臀桥",
+      "instruction": "肩背贴地，收紧臀部后抬起髋部。",
+      "kind": "REPS",
+      "value": 12,
+      "sets": 3,
+      "tutorialQuery": "臀桥 正确姿势"
+    }
   ]
 }
 ```
 
-字段 `kind` 只能是 `TIME`（秒）或 `REPS`（次数）；`id` 在同一天必须唯一。更新本地默认计划时也只需替换同格式的 `today_plan.json`。
+保持字段与示例一致。不要把个人训练历史或生活记录提交到公开仓库。
+
+## 数据与隐私
+
+- 训练计划与完成状态保存在应用本地；默认训练计划文件随代码提供。
+- 生活区 A 期的喝水、日记、穿搭和支出记录保存在 Android 应用私有目录中的本地偏好存储。
+- 当前版本不提供账号体系、跨设备云同步、账单截图上传或云端 OCR。
+- 公共仓库只应保存示例计划和代码。不要提交真实流水、日记、穿搭照片、账号凭据或密钥。
+- 本地记录暂未做应用级加密；使用者应设置设备锁屏，并避免在共享设备上保存敏感内容。
+
+## 当前限制
+
+- 生活区仍处于 A 期接入阶段，视觉插画与已确认预览稿的细节还需继续落地。
+- 自动喝水提醒、三餐/习惯历史、衣橱图片管理、收支分类统计和账单截图识别尚未接入。
+- 云同步与 AI 穿搭建议尚未接入。
+- GitHub 计划刷新依赖网络；离线时应用继续使用本地计划。
+- 此次融合 PR 尚未在 Android SDK 环境中完成构建验证，请勿将草稿分支视为正式发布版。
+
+## 开发路线
+
+- [x] 保留现有训练主流程，并新增今日与生活区入口（A 期草稿）。
+- [x] 加入喝水、日记、穿搭和手动支出的本地记录入口（A 期草稿）。
+- [ ] 在 Android Studio / CI 完成构建、真机布局和功能验收。
+- [ ] 对照已冻结的视觉稿精修手绘插画、布局与角色切换细节。
+- [ ] 增加喝水提醒、餐食与习惯记录、穿搭历史和流水统计。
+- [ ] 设计私有云同步与备份；未经确认不上传私人记录。
+- [ ] 评估端侧账单识别与穿搭视觉建议。
+
+## English summary
+
+DailyGlow is a Kotlin and Jetpack Compose Android app for workouts and everyday personal records. The existing workout flow remains available alongside an in-progress Life area for hydration, journaling, outfit notes, and manual expenses. Life records are currently stored on-device. Cloud sync, receipt OCR, and AI outfit advice are not available yet. The integration branch is a draft and has not passed an Android build in this workspace.
