@@ -1,6 +1,9 @@
 package com.echo.dailyglow
 
 import android.content.Context
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,6 +38,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
 import java.time.LocalDate
 
 private val LifePaper = Color(0xFFFFFAF4)
@@ -120,6 +126,35 @@ fun DailyLifeHub(context: Context) {
     var note by remember { mutableStateOf("") }
     var transactions by remember { mutableStateOf(prefs.getString("transactions_$date", "") ?: "") }
     var saved by remember { mutableStateOf(false) }
+    var ocrText by remember { mutableStateOf("") }
+    var ocrStatus by remember { mutableStateOf("") }
+    val receiptPicker = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        ocrText = ""
+        ocrStatus = "正在本机识别截图…"
+        try {
+            val image = InputImage.fromFilePath(context, uri)
+            val recognizer = TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
+            recognizer.process(image)
+                .addOnSuccessListener { result ->
+                    ocrText = result.text
+                    val candidates = ocrAmountCandidates(result.text)
+                    if (candidates.size == 1) {
+                        amount = String.format(Locale.US, "%.2f", candidates.single())
+                        ocrStatus = "识别完成，请核对金额、账户和分类后再保存。"
+                    } else {
+                        ocrStatus = if (result.text.isBlank()) "没有识别出文字，请换一张清晰截图。" else "已提取截图文字；金额不唯一，请核对后手动填写。"
+                    }
+                    recognizer.close()
+                }
+                .addOnFailureListener {
+                    ocrStatus = "截图识别失败，请手动填写流水。"
+                    recognizer.close()
+                }
+        } catch (_: Exception) {
+            ocrStatus = "无法读取这张截图，请重新选择或手动填写。"
+        }
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().background(LifePaper),
@@ -224,6 +259,20 @@ fun DailyLifeHub(context: Context) {
             item { Text("照片管理与 AI 穿搭建议将在后续阶段接入。", color = LifeInk.copy(alpha = .68f), fontSize = 12.sp) }
         } else {
             item {
+                Button(onClick = { receiptPicker.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly)) }, colors = ButtonDefaults.buttonColors(containerColor = LifeSage)) {
+                    Text("从截图识别流水", color = LifeBlue)
+                }
+            }
+            if (ocrStatus.isNotBlank()) item {
+                Card(shape = RoundedCornerShape(18.dp), colors = CardDefaults.cardColors(containerColor = LifeSage.copy(alpha = .55f))) {
+                    Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(ocrStatus, color = LifeBlue, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                        if (ocrText.isNotBlank()) Text(ocrText.take(1000), color = LifeInk, fontSize = 12.sp, lineHeight = 18.sp)
+                        Text("截图只在本机识别，不会保存原图。", color = LifeInk.copy(alpha = .7f), fontSize = 11.sp)
+                    }
+                }
+            }
+            item {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     listOf("农行", "支付宝", "微信").forEach { source ->
                         Button(onClick = { expenseSource = source }, contentPadding = PaddingValues(horizontal = 10.dp, vertical = 7.dp), colors = ButtonDefaults.buttonColors(containerColor = if (expenseSource == source) LifePeach else LifeSage)) { Text(source, color = LifeBlue, fontSize = 12.sp) }
@@ -252,7 +301,7 @@ fun DailyLifeHub(context: Context) {
                     }
                 }
             }
-            item { Text("截图导入与识别会在后续阶段接入；当前流水保存在本机。", color = LifeInk.copy(alpha = .68f), fontSize = 12.sp) }
+            item { Text("识别结果需手动核对并确认保存；流水记录保存在本机。", color = LifeInk.copy(alpha = .68f), fontSize = 12.sp) }
         }
         item { Spacer(Modifier.height(12.dp)) }
     }
@@ -260,3 +309,18 @@ fun DailyLifeHub(context: Context) {
 
 
 private fun todayLabel(date: LocalDate): String = "${date.year}年${date.monthValue}月${date.dayOfMonth}日"
+
+private fun ocrAmountCandidates(raw: String): List<Double> {
+    val candidates = mutableListOf<Double>()
+    raw.lineSequence().forEach { line ->
+        val hasCurrencyMarker = line.contains("¥") || line.contains("￥") || line.contains("元")
+        if (hasCurrencyMarker) {
+            val tokens = line.replace("¥", " ").replace("￥", " ").replace("元", " ")
+                .split(Regex("[^0-9.,+-]+"))
+            tokens.mapNotNull { it.replace(",", ".").toDoubleOrNull() }
+                .filter { it > 0.0 }
+                .forEach { candidates.add(it) }
+        }
+    }
+    return candidates.distinct()
+}
