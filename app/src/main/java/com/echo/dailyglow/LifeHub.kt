@@ -460,7 +460,7 @@ private fun LifeHero(section: String, onExit: () -> Unit) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(title, color = LifeBlue, fontSize = 22.sp, fontWeight = FontWeight.Bold)
             Text(subtitle, color = LifeInk.copy(alpha = .78f), fontSize = 12.sp, lineHeight = 18.sp)
-            Text("‹ 返回 DailyGlow", Modifier.clickable(onClick = onExit).padding(top = 4.dp), color = LifeBlue.copy(alpha = .75f), fontSize = 11.sp)
+            Text("‹ 返回", Modifier.clickable(onClick = onExit).padding(top = 4.dp), color = LifeBlue.copy(alpha = .75f), fontSize = 11.sp)
         }
         Image(bitmap, contentDescription = title, modifier = Modifier.width(190.dp).height(145.dp), contentScale = ContentScale.Fit)
     }
@@ -473,7 +473,7 @@ private fun LifeDateStrip(selectedDate: LocalDate, isToday: Boolean, onPrevious:
         horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
     ) {
         Text("‹", Modifier.clickable(onClick = onPrevious).padding(horizontal = 8.dp), color = LifeBlue, fontSize = 22.sp)
-        Text("${todayLabel(selectedDate)}  ·  ${selectedDate.dayOfWeek.name}", color = LifeBlue, fontSize = 14.sp)
+        Text("${todayLabel(selectedDate)}  星期${listOf("一", "二", "三", "四", "五", "六", "日")[selectedDate.dayOfWeek.value - 1]}", color = LifeBlue, fontSize = 14.sp)
         Text("›", Modifier.clickable(enabled = !isToday, onClick = onNext).padding(horizontal = 8.dp), color = if (isToday) LifeInk.copy(alpha = .3f) else LifeBlue, fontSize = 22.sp)
     }
 }
