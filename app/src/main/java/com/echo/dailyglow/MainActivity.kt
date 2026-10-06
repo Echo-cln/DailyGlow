@@ -172,7 +172,7 @@ private fun DailyGlowApp(sharedPlanText: String?, sharedPlanIsHistory: Boolean, 
                             onLife = { currentTab = "life" },
                             context = context
                         )
-                        "life" -> DailyLifeHub(context)
+                        "life" -> DailyLifeHub(context, onExit = { currentTab = "today" })
                         else -> LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 16.dp),
@@ -229,7 +229,7 @@ private fun DailyGlowApp(sharedPlanText: String?, sharedPlanIsHistory: Boolean, 
                     }
                     }
                 }
-                DailyGlowNavigationBar(currentTab) { currentTab = it }
+                if (currentTab != "life") DailyGlowNavigationBar(currentTab) { currentTab = it }
             }
         }
     }
