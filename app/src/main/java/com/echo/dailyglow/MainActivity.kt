@@ -79,13 +79,13 @@ import java.net.URL
 import java.time.LocalDate
 import kotlin.concurrent.thread
 
-private val Cashmere = Color(0xFFF1E4D9)
-private val GoldPink = Color(0xFFF7D7CD)
-private val Berry = Color(0xFFD79B95)
-private val Maroon = Color(0xFF984343)
-private val Teal = Color(0xFF91BDC2)
-private val MistBlue = Color(0xFFD8EEF0)
-private val Ink = Color(0xFF372A2A)
+private val Cashmere = Color(0xFFFFFAF4)
+private val GoldPink = Color(0xFFF5D7C7)
+private val Berry = Color(0xFFE9B7A5)
+private val Maroon = Color(0xFFC87868)
+private val Teal = Color(0xFFE4EBDD)
+private val MistBlue = Color(0xFFEAF0F1)
+private val Ink = Color(0xFF4D5660)
 
 data class WorkoutPlan(val date: String, val title: String, val note: String, val playlist: String, val items: List<WorkoutItem>)
 data class WorkoutItem(val id: String, val phase: String, val name: String, val instruction: String, val kind: String, val value: Int, val sets: Int, val tutorialQuery: String)
